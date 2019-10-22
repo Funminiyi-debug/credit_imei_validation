@@ -1,12 +1,14 @@
 
 // SELECT DOM ELEMENTS 
-const missingValuesNoOfTimes = document.getElementById('missingValuesNoOfTimes').value, 
-    testingField = document.getElementById('testingField').value,
+let testingFieldValue
+const missingValuesNoOfTimes = document.getElementById('missingValuesNoOfTimes'), 
+    testingField = document.getElementById('testingField'),
     validateWithLuhnButton = document.getElementById('validateWithLuhnButton'),  
     checkMissingValuesButton = document.getElementById('checkMissingValuesButton'),
     generateLuhnNumberButton = document.getElementById('generateLuhnNumberButton'),
-    lengthOfGeneratedValuesField = document.getElementById('lengthOfGeneratedValuesField').value,
-    numberOfLuhnToGenerateField = document.getElementById('numberOfLuhnToGenerateField').value
+    lengthOfGeneratedValuesField = document.getElementById('lengthOfGeneratedValuesField'),
+    numberOfLuhnToGenerateField = document.getElementById('numberOfLuhnToGenerateField'), 
+    allFields = document.getElementsByTagName('input')
 
     // DISPLAY BOX 
 const displayBox = document.getElementById('displayField')
@@ -104,46 +106,53 @@ const runGenerateLuhnNumberNTimes = (desiredLengthofNumber, numberOfItems) => {
         return item.join("")
     })
 }
-let possibleNumbers = 0
+// let possibleNumbers = 0
 // function to replace missing numbers
-const replaceMissingNumbers = (array, possibleNumbers    ) => {
-    if (!Array.isArray(array)){
+const replaceMissingNumbers = (array, i) => {
+    if (!Array.isArray(array, i)){
         throw new Error('number must be an array')
     }
     
-    if(possibleNumbers>9){
-        return;
-    }
-    let possibleSolution = array.map((item) => {
+    let possibleSolution = []
+    // const answers = []
+    // log(i)
+       possibleSolution.push(array.map((item) => {
             if(typeof item !== 'undefined'){
                 return item
             }else {
-                return possibleNumbers
+                return i
             }
-    }) 
-    
-    const isValid = validateWithLuhn(possibleSolution)
-    if(isValid) {
-        return possibleSolution.reverse()
-    } else{ 
-        possibleNumbers++
-        return replaceMissingNumbers(array)
+        }))
+        log(possibleSolution)
+        const isValid = validateWithLuhn(possibleSolution)
+        log(isValid)
+        if(isValid) {
+            log('this one was valid')
+         return possibleSolution.reverse()
+        } 
+
     }
-}
 
 // perform the missing values n times 
-const generateMissingNumbersNTimes = (stringToTest, noOfTimes) => {  
+const generateMissingNumbersNTimes = (stringToTest) => {  
     const stringToArray = workOnInputedNumbers(stringToTest)
     const thisArrays = []
-    for(let i=1; i<=noOfTimes; i++){
-        
-        for(let j=0; j<10; j++){
-            thisArrays.push(replaceMissingNumbers(stringToArray))  
-        }
+    const arraysToJoin = []
+    for(let n=0; n<=9; n++){
+        thisArrays.push(replaceMissingNumbers(stringToArray, n))
+        // log(i, )
+        // log(replaceMissingNumbers(stringToArray, n))
+        // log(thisArrays)    
     }
-    return thisArrays.map((item) => {
-        return item.join("")
+    // log(thisArrays)
+    thisArrays.forEach((array) => {
+        if(array !== 'undefined'){
+            arraysToJoin.push(thisArrays.map((item) => {
+                return item.join("")
+            }))
+        }
     })
+    return arraysToJoin
 }
 
 
@@ -153,9 +162,10 @@ const generateMissingNumbersNTimes = (stringToTest, noOfTimes) => {
 // test Numbers with Luhn handler 
 const testNumbersWithLuhnHandler = (event, inputtedString, field) => {
     event.preventDefault()
-    log('you clicked the validate luhn')
+    let inputtedStringValue = inputtedString.value.trim();
     field.innerHTML = ""
-    const generatedArray = workOnInputedNumbers(inputtedString);
+    log(inputtedStringValue)
+    const generatedArray = workOnInputedNumbers(inputtedStringValue);
     const passed = validateWithLuhn(generatedArray);
     if(passed) {
         field.innerHTML = `<li class="list-group-item text-success">Number is valid</li>`
@@ -167,12 +177,13 @@ const testNumbersWithLuhnHandler = (event, inputtedString, field) => {
 }
 
 // check for missing values handler 
-const checkMissingValuesButtonHandler = (event, string, field, numberofTimes) => {
+const checkMissingValuesButtonHandler = (event, stringField, field) => {
     event.preventDefault()
-    log('you clicked the check missing values button')
+    let stringValue = stringField.value.trim();
+    // let numberofTimesValue = numberofTimesField.value.trim()
     field.innerHTML = ""
 try{
-    const arrayOfPossibleValues = generateMissingNumbersNTimes(string, numberofTimes);
+    const arrayOfPossibleValues = generateMissingNumbersNTimes(stringValue);
     log(arrayOfPossibleValues)
     arrayOfPossibleValues.forEach((value, valueIndex) => {
         
@@ -189,8 +200,10 @@ try{
 // generate LUHN number button handler
 const generateLuhnNumberButtonHandler = (event, field, desiredNumberLength, numberOfArrays) => {
     event.preventDefault()
-    let lengthOfString = parseInt(desiredNumberLength)
-    let numberOfTheArrays = parseInt(numberOfArrays)
+    const desiredNumberLengthValue = desiredNumberLength.value.trim();
+    const numberOfArraysValue = numberOfArrays.value.trim();
+    let lengthOfString = parseInt(desiredNumberLengthValue)
+    let numberOfTheArrays = parseInt(numberOfArraysValue)
     field.innerHTML = ""
     if(lengthOfString < 13 || lengthOfString > 16) {
         log('this should run')
@@ -202,7 +215,6 @@ const generateLuhnNumberButtonHandler = (event, field, desiredNumberLength, numb
         field.innerHTML += `<li class="list-group-item text-success"><span class="mr-3 text-primary">(${valueIndex+1})</span> ${value}</li>`
     })
 }
-
 
 
 // assign events to the functions
